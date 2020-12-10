@@ -9,7 +9,7 @@ to map a service to specific hardware and machine image of choice.
 
 ## Installation
 
-To install the tool,you can use `poetry` or `pip`:
+To install the tool, you can use either `poetry` or `pip`:
 
 Clone the project:
 
