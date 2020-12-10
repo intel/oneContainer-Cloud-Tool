@@ -11,14 +11,20 @@ to map a service to specific hardware and machine image of choice.
 
 To install the tool,you can use `poetry` or `pip`:
 
-Using poetry:
+Clone the project:
+
+```bash
+git clone https://github.com/intel/oneContainer-Cloud-Tool
+```
+
+Install using poetry:
 
 ```bash
 $ cd oneContainer-cloud-tool
 $ poetry install
 ```
 
-Using pip:
+Install using pip:
 
 ```bash
 $ cd oneContainer-cloud-tool
