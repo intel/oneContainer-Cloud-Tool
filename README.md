@@ -38,7 +38,7 @@ oneContainer-cloud-tool has been installed and can be accessed as `onecontainer-
 Let's see what we can do with this tool:
 
 ```bash
-$ poetry run onecontainer_cloud_tool --help
+$ onecontainer_cloud_tool --help
 ```
 
 The output should look like:
@@ -69,7 +69,7 @@ The tool's three options are `init`, to initialize a cloud service, `start`, to 
 To initialize the cloud service, an `access-key`, `secret-key` , `region` and name of the `cloud` service to be used, default cloud service is `aws`.
 
 ```bash
-$ poetry run onecontainer-cloud-tool init --help
+$ onecontainer-cloud-tool init --help
 ```
 
 Output of the command is:
@@ -95,7 +95,7 @@ The `PEM` file is the private key generated to access the instances through SSH.
 As mentioned above, the `start` command is used to deploy a container service by mapping it to a specific HW of choice. Optionally a machine image name can also be given using the flag `--mi`.
 
 ```bash
-$ poetry run onecontainer-cloud-tool start --help
+$ onecontainer-cloud-tool start --help
 ```
 
 Output of the command is:
@@ -119,7 +119,7 @@ The `PEM` file is associated to the service to allow Secure Shell connection.
 This command helps to stop the running services.
 
 ```bash
-$ poetry run onecontainer-cloud-tool stop --help
+$ onecontainer-cloud-tool stop --help
 ```
 
 Output of the command is:
