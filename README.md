@@ -1,5 +1,5 @@
 # oneContainer-cloud-tool
-The oneContainer-cloud-tool utility helps to deploy a docker container to public cloud services. The `tool` enables a user
+The oneContainer-cloud-tool utility helps to deploy containers to public cloud services. The `tool` enables a user
 to map a service to specific hardware and machine image of choice.
 
 ## Requirements
