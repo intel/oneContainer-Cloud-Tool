@@ -9,14 +9,23 @@ to map a service to specific hardware and machine image of choice.
 
 ## Installation
 
-To install the tool, run:
+To install the tool,you can use `poetry` or `pip`:
+
+Using poetry:
 
 ```bash
 $ cd oneContainer-cloud-tool
 $ poetry install
 ```
 
-oneContainer-cloud-tool has been installed and can be accessed as `onecontainer_cloud_tool`.
+Using pip:
+
+```bash
+$ cd oneContainer-cloud-tool
+$ pip install .
+```
+
+oneContainer-cloud-tool has been installed and can be accessed as `onecontainer-cloud-tool`.
 
 ## Usage
 
