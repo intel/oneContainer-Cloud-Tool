@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "onecontainer-cloud-tool"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+boto3 = "^1.16.15"
+click = "^7.1.2"
+loguru = "^0.5.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+onecontainer-cloud-tool = "onecontainer_cloud_tool.cli:cli"
+oneContainer-Cloud-Tool = "onecontainer_cloud_tool.cli:cli"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
