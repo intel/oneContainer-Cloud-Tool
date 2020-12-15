@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2020 Intel Corporation
 from onecontainer_cloud_tool import aws
 from onecontainer_cloud_tool.abstract_cloud import Cloud
 from onecontainer_cloud_tool.logger import logger
