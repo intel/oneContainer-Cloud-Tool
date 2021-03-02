@@ -1,4 +1,4 @@
-# oneContainer-cloud-tool
+# oneContainer Cloud Tool
 The oneContainer-cloud-tool utility helps to deploy containers to public cloud services. The `tool` enables a user
 to map a service to specific hardware and machine image of choice.
 
