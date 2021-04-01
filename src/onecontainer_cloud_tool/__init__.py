@@ -1,5 +1,10 @@
 import os
+import pkg_resources
 
-__version__ = "0.1.0"
+try:
+    version = pkg_resources.get_distribution("onecontainer-cloud-tool").version
+except:
+    version = None
+__version__ = version or "0.2.0"
 
-os.chdir(os.path.dirname(__file__))
+#os.chdir(os.path.dirname(__file__))

@@ -2,10 +2,13 @@ import click
 
 
 from onecontainer_cloud_tool.logger import logger
-from onecontainer_cloud_tool.cloud_services import service
+from onecontainer_cloud_tool.list_instances import render_data
+from onecontainer_cloud_tool.services import service
+
 from . import __version__
 
 aws = service("aws")
+azure = service("azure")
 
 
 @click.group()
@@ -13,11 +16,11 @@ aws = service("aws")
 @click.option(
     "--cloud",
     "-c",
-    type=click.Choice(["aws"]),
-    help="Use a cloud service, options are: aws",
+    type=click.Choice(["aws", "azure"]),
+    help="Use a cloud service, options are: aws, azure",
 )
 @click.pass_context
-def cli(ctx, cloud="aws") -> None:
+def cli(ctx, cloud=None) -> None:
     """onecontainer_cloud_tool - deploy containers using specific HW on the cloud.
 
     This tool supports deploying container instances to cloud services, mapping to
@@ -27,33 +30,56 @@ def cli(ctx, cloud="aws") -> None:
     ctx.obj = {"cloud": cloud}
 
 
+@cli.command("list_instances")
+@click.option(
+    "--cloud",
+    "-c",
+    help="list instances for the cloud",
+    type=click.Choice(["aws", "azure", "all"]),
+)
+def list_instances(cloud):
+    """list cloud instances for intel."""
+    if cloud is None:
+        render_data(cloud="all")
+    else:
+        render_data(cloud=cloud)
+
+
 @cli.command("init")
 @click.option(
     "--access-key",
     "-ak",
-    prompt=True,
     help="Access Key Id to access the cloud service",
     envvar="ACCESS_KEY",
+    hide_input=True,
 )
 @click.option(
     "--secret-key",
     "-sk",
-    prompt=True,
     help="Secret Key to access the cloud service",
     envvar="SECRET_KEY",
+    hide_input=True,
 )
 @click.option(
     "--region",
     "-r",
-    type=click.Choice(["us-east-1", "us-east-2", "us-west-1", "us-west-2"]),
-    default="us-east-1",
-    help="The region where the  service be located",
+    help="The region where the service be located",
 )
 @click.pass_context
-def init(ctx, access_key, secret_key, region):
+def init(ctx, access_key=None, secret_key=None, region=None):
     logger.debug("Initializing service")
     if ctx.obj.get("cloud", None) == "aws":
+        if access_key is None:
+            access_key = click.prompt("access key", hide_input=True)
+        if secret_key is None:
+            secret_key = click.prompt("secret key", hide_input=True)
+        if region is None:
+            region = "us-east-1"
         aws.initialize(access_key, secret_key, region)
+    elif ctx.obj.get("cloud", None) == "azure":
+        if region is None:
+            region = "eastus"
+        azure.initialize(region)
 
 
 @cli.command("start")
@@ -61,7 +87,6 @@ def init(ctx, access_key, secret_key, region):
     "--machine-image",
     "-mi",
     default="ami-0128839b21d19300e",
-    prompt=True,
     help="Machine Image required for service",
 )
 @click.option(
@@ -74,16 +99,22 @@ def init(ctx, access_key, secret_key, region):
 @click.option(
     "--instance-type",
     "-i",
-    default="t2.medium",
-    prompt=True,
     help="Hardware instance type",
 )
 @click.pass_context
-def start(ctx, machine_image, container_image_url, instance_type):
-    logger.debug("Starting container service")
-    # Using as sysstacks/dlrs-tensorflow-ubuntu as image.
+def start(ctx, machine_image, container_image_url, instance_type=None):
     if ctx.obj.get("cloud", None) == "aws":
+        if instance_type is None:
+            instance_type = click.prompt("instance type", default="m5n.large")
+            if machine_image is None:
+                machine_image = click.prompt("machine image", default="ami-0128839b21d19300e")
         aws.deploy(instance_type, container_image_url, machine_image)
+    elif ctx.obj.get("cloud", None) == "azure":
+        if instance_type is None:
+            instance_type = click.prompt("instance type", default="Standard_F2s_v2")
+            if machine_image is None:
+                machine_image = click.prompt("machine image", default="UbuntuServer", type=click.Choice(['UbuntuServer']))
+        azure.deploy(instance_type, container_image_url)
 
 
 @cli.command("stop")
@@ -96,3 +127,5 @@ def stop(ctx):
     logger.debug("Stopping container service")
     if ctx.obj.get("cloud", None) == "aws":
         aws.stop()
+    elif ctx.obj.get("cloud", None) == "azure":
+        azure.stop()
