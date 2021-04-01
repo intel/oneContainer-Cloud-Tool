@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2020 Intel Corporation
+# Copyright (c) 2021 Intel Corporation
+
 import configparser
 import os
+from pathlib import Path
 from functools import lru_cache
 from typing import Dict, List
 
 import boto3
-import click
 
-from onecontainer_cloud_tool.abstract_cloud import Cloud
+from onecontainer_cloud_tool.cloud.abstract_cloud import Cloud
 from onecontainer_cloud_tool import config
 from onecontainer_cloud_tool import utils
 from onecontainer_cloud_tool.logger import logger
@@ -31,6 +32,7 @@ class AWS(Cloud):
             be used in the container deployment phase.
             All of this is written in an configuration occ_config.ini file for future use.
         """
+        key_file_path = Path.home().resolve() / ".ssh"/ f"{config.KEY_FILE}.pem"
         try:
             ec2_client = boto3.client(
                 "ec2",
@@ -38,10 +40,11 @@ class AWS(Cloud):
                 aws_secret_access_key=secret_key,
                 region_name=region,
             )
-            keyPair = ec2_client.create_key_pair(KeyName=config.KEY_FILE)
-            click.echo(f"Writing private key in {config.KEY_FILE}.pem")
-            keyFile = open(f"{config.KEY_FILE}.pem", "w")
-            keyFile.write(keyPair["KeyMaterial"])
+            key_pair = ec2_client.create_key_pair(KeyName=config.KEY_FILE)
+            logger.debug(f"Writing private key in {config.KEY_FILE}.pem")
+            with open(key_file_path, "w") as key_file:
+                key_file.write(key_pair["KeyMaterial"])
+            os.chmod(key_file_path, 0o600)
         except Exception as e:
             logger.error(e)
             logger.info(
@@ -52,27 +55,29 @@ class AWS(Cloud):
         logger.debug(f"Writing {region} as region for AWS in {config.CONFIG_FILE}")
         logger.debug(f"Writing AWS access and secret key in {config.CONFIG_FILE}")
         logger.debug(f"Writing private key file name in {config.CONFIG_FILE} file")
+        logger.debug(f"Writing private key file path in {config.CONFIG_FILE} file")
 
-        self.ini_conf["DEFAULT"] = {
+        self.ini_conf["AWS"] = {
             "REGION": region,
             "ACCESS_KEY": access_key,
             "SECRET_KEY": secret_key,
             "PRIVATE_KEY_FILE": f"{config.KEY_FILE}.pem",
+            "PRIVATE_KEY_FILE_PATH": key_file_path,
         }
         with open(config.CONFIG_FILE, "w") as config_file:
             self.ini_conf.write(config_file)
 
     @classmethod
-    @lru_cache
+    @lru_cache(maxsize=10)
     def _get_clients(cls):
         """login to ec2 and ecs."""
         if not hasattr(cls, "ini_conf"):
             logger.debug("ini_conf attribute not found, setting.")
             setattr(cls, "ini_conf", configparser.ConfigParser())
             cls.ini_conf.read(config.CONFIG_FILE)
-        aws_access_key_id = cls.ini_conf["DEFAULT"].get("ACCESS_KEY")
-        aws_secret_access_key = cls.ini_conf["DEFAULT"].get("SECRET_KEY")
-        region_name = cls.ini_conf["DEFAULT"].get("REGION")
+        aws_access_key_id = cls.ini_conf["AWS"].get("ACCESS_KEY")
+        aws_secret_access_key = cls.ini_conf["AWS"].get("SECRET_KEY")
+        region_name = cls.ini_conf["AWS"].get("REGION")
         ec2 = boto3.client(
             "ec2",
             aws_access_key_id=aws_access_key_id,
@@ -101,14 +106,22 @@ class AWS(Cloud):
             self.security_group_name = f"onecontainer-security-group-{self.timestamp}"
             self.service_name = f"onecontainer-service-{self.timestamp}"
             self.task_name = f"onecontainer-task-{self.timestamp}"
-            self.vpc_id = AWS._get_default_vpc()
+            self.vpc_id = self._get_default_vpc()
+            self.security_group_id = self._config_security_group()
             ec2, ecs = AWS._get_clients()
             ecs.create_cluster(clusterName=self.cluster_name)
-            self._create_vpc(ec2)
-            self._create_ec2_instance(ec2, instance_type, ami)
+            (self.dns, self.ip_address) = self._create_ec2_instance(ec2, instance_type, ami)
             self._register_container_task(ecs, image)
             self._create_service(ecs)
             self._write_config()
+            logger.info("Success!")
+            logger.info("You can access the deployed solution via SSH")
+            logger.info(f"ec2-user@{self.dns}")
+            logger.info("or")
+            logger.info(f"ec2-user@{self.ip_address}")
+            logger.info(
+                f"Use the private key file generated to authenticate in the ssh connection"
+            )
         except FileNotFoundError:
             logger.error("configuration file not found. please run init command first")
         except Exception as err:
@@ -121,8 +134,6 @@ class AWS(Cloud):
             logger.debug("default VPC created.")
         except Exception:
             logger.debug("default VPC available.")
-        self.security_group_id = self._config_security_group(self.vpc_id)
-        logger.debug("configured security group for instance.")
 
     def _create_ec2_instance(self, ec2, instance_type: str, ami: str):
         """launch ec2 instance with an instance type and ami."""
@@ -134,7 +145,7 @@ class AWS(Cloud):
             InstanceType=instance_type,
             IamInstanceProfile={"Name": "ecsInstanceRole"},
             SecurityGroupIds=[self.security_group_id],
-            KeyName=self.ini_conf["DEFAULT"].get("PRIVATE_KEY_FILE").split(".")[0],
+            KeyName=self.ini_conf["AWS"].get("PRIVATE_KEY_FILE").split(".")[0],
             UserData="#!/bin/bash \n echo ECS_CLUSTER="
             + self.cluster_name
             + " >> /etc/ecs/ecs.config",
@@ -143,6 +154,21 @@ class AWS(Cloud):
         for ec2_instance in ec2_instance_res["Instances"]:
             waiter.wait(InstanceIds=[ec2_instance["InstanceId"]])
             logger.debug(f'EC2 Instance {ec2_instance["InstanceId"]} created.')
+            ec2_reloaded_res = ec2.describe_instances(
+                InstanceIds=[ec2_instance["InstanceId"]]
+            )
+            ec2_instances_reloaded = ec2_reloaded_res["Reservations"][0]["Instances"]
+            if ec2_instances_reloaded:
+                logger.debug(
+                    f'EC2 Instance DNS: {ec2_instances_reloaded[0]["PublicDnsName"]}'
+                )
+                logger.debug(
+                    f"EC2 Instance public ip: {ec2_instances_reloaded[0]['PublicIpAddress']}"
+                )
+                return (
+                    ec2_instances_reloaded[0]["PublicDnsName"],
+                    ec2_instances_reloaded[0]["PublicIpAddress"],
+                )
 
     def _register_container_task(
         self,
@@ -169,6 +195,7 @@ class AWS(Cloud):
                     #     }
                     # ],
                     "memory": memory,
+                    'pseudoTerminal': True,
                     "cpu": cpu,
                 }
             ],
@@ -194,12 +221,14 @@ class AWS(Cloud):
 
     def _write_config(self):
         """persist cluster config info to config file."""
-        self.ini_conf[f"service-{self.timestamp}"] = {
+        self.ini_conf[f"AWS-service-{self.timestamp}"] = {
             "cluster_name": self.cluster_name,
             "default_vpc_id": self.vpc_id,
             "security_group_id": self.security_group_id,
             "task_name": self.task_name,
             "service_name": self.service_name,
+            "ssh_ip": f"ec2-user@{self.ip_address}",
+            "ssh_dns": f"ec2-user@{self.dns}"
         }
         with open(config.CONFIG_FILE, "w") as config_file:
             self.ini_conf.write(config_file)
@@ -213,8 +242,13 @@ class AWS(Cloud):
             AWS._check_config_file()
             instance_ids = []
             cluster_sgs_info = []
-            for each_section in self.ini_conf.sections():
+            for each_section in [
+                section_name
+                for section_name in self.ini_conf.sections()
+                if "AWS-service" in section_name
+            ]:
                 section = dict(self.ini_conf.items(each_section))
+                self.ini_conf.remove_section(each_section)
                 logger.debug(f"Stopping service {each_section}")
 
                 cluster_sgs_info.append(
@@ -226,22 +260,35 @@ class AWS(Cloud):
                     section["service_name"],
                     section["task_name"],
                 )
+
+            AWS._remove_key_pair(
+                self.ini_conf["AWS"].get("PRIVATE_KEY_FILE").split(".")[0]
+            )
             AWS._terminate_cluster_instances(instance_ids, cluster_sgs_info)
-            os.remove(f"{config.CONFIG_FILE}")
-            os.remove(self.ini_conf["DEFAULT"]["private_key_file"])
+            os.remove(self.ini_conf["AWS"].get("PRIVATE_KEY_FILE_PATH"))
+            self.ini_conf.remove_section("AWS")
+            if not utils.remove_config_if_empty(self.ini_conf, config):
+                with open(config.CONFIG_FILE, "w") as config_file:
+                    self.ini_conf.write(config_file)
+
             logger.debug(
-                f"{config.KEY_FILE} key file and {config.CONFIG_FILE} config file removed"
+                f"{config.KEY_FILE} key file and configuration removed"
             )
         except FileNotFoundError:
             logger.error("configuration file not found. please run init command first")
 
-    @classmethod
-    def _get_default_vpc(cls) -> str:
-        ec2, _ = AWS._get_clients()
+    def _get_default_vpc(self) -> str:
+        try:
+            ec2, _ = AWS._get_clients()
+            self._create_vpc(ec2) 
+        except:
+            logger.debug("Using default VPC")
+            
         response = ec2.describe_vpcs(
-            Filters=[{"Name": "isDefault", "Values": ["true"]}]
-        )
+                Filters=[{"Name": "isDefault", "Values": ["true"]}]
+            )
         return response["Vpcs"][0]["VpcId"]
+
 
     @classmethod
     def _terminate_cluster_instances(cls, instance_ids: List, clusters_info: Dict):
@@ -250,7 +297,8 @@ class AWS(Cloud):
         if instance_ids:
             waiter = ec2.get_waiter("instance_terminated")
             ec2.terminate_instances(
-                DryRun=False, InstanceIds=instance_ids,
+                DryRun=False,
+                InstanceIds=instance_ids,
             )
             waiter.wait(InstanceIds=instance_ids)
         # deletion of now empty ECS clusters
@@ -258,7 +306,18 @@ class AWS(Cloud):
             logger.debug(f"Removing cluster {cluster_name}")
             ecs.delete_cluster(cluster=cluster_name)
             logger.debug(f"Removing security group {security_group_id}")
-            ec2.delete_security_group(GroupId=security_group_id,)
+            ec2.delete_security_group(
+                GroupId=security_group_id,
+            )
+
+    @classmethod
+    def _remove_key_pair(cls, key_name: str):
+        ec2, _ = AWS._get_clients()
+        try:
+            logger.debug(f"Removing key pair {key_name}")
+            ec2.delete_key_pair(KeyName=key_name)
+        except:
+            logger.debug("Keypair not found")
 
     @classmethod
     def _delete_service(
@@ -301,13 +360,14 @@ class AWS(Cloud):
                 instance_ids.append(instance_id)
         return instance_ids
 
-    def _config_security_group(self, vpc_id: str) -> str:
+    def _config_security_group(self) -> str:
         """set egress and ingress rules and configure security group."""
+    
         ec2, _ = AWS._get_clients()
         response = ec2.create_security_group(
             Description="Security Group to allow EC2 instance to register into cluster",
             GroupName=self.security_group_name,
-            VpcId=vpc_id,
+            VpcId=self.vpc_id,
             TagSpecifications=[
                 {
                     "ResourceType": "security-group",
@@ -318,6 +378,7 @@ class AWS(Cloud):
             ],
         )
         security_group_id = response["GroupId"]
+
         ec2.authorize_security_group_egress(
             GroupId=security_group_id,
             IpPermissions=[
@@ -334,7 +395,7 @@ class AWS(Cloud):
                 },
             ],
         )
-        ec2.authorize_security_group_ingress(
+        data = ec2.authorize_security_group_ingress(
             GroupId=security_group_id,
             IpPermissions=[
                 {
@@ -345,10 +406,19 @@ class AWS(Cloud):
                 },
                 {
                     "IpProtocol": "tcp",
+                    "FromPort": 443,
+                    "ToPort": 443,
+                    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                },
+                {
+                    "IpProtocol": "tcp",
                     "FromPort": 22,
                     "ToPort": 22,
                     "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
                 },
             ],
+
         )
+        logger.debug("configured security group for instance.")
+
         return security_group_id

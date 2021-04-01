@@ -2,12 +2,15 @@
 *.env
 *.pem
 *.ini
+*azure-session
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 .vscode
+.vim
+.vimrc
 # C extensions
 *.so
 

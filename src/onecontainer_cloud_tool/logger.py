@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2020 Intel Corporation
+# Copyright (c) 2021 Intel Corporation
+
 """unified logging for onecontainer cloud tool"""
 from pathlib import Path
 
@@ -12,9 +13,9 @@ def _mk_log_dir(path: str) -> Path:
 
 def log_config(
     file_path: Path = _mk_log_dir("logs/onecontainer_cloud_tool.log"),
-    file_retention=1,
-    file_rotation=30,
-    level="DEBUG",
+    file_retention=2,
+    file_rotation="3 MB",
+    level="INFO",
 ):
     """logger sane defaults."""
     logger.add(
