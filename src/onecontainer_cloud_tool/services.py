@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2021 Intel Corporation
+
 """cloud service factory."""
 from typing import Optional
 from onecontainer_cloud_tool.cloud.aws import AWS

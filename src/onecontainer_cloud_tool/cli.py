@@ -1,5 +1,7 @@
-import click
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2021 Intel Corporation
 
+import click
 
 from onecontainer_cloud_tool.logger import logger
 from onecontainer_cloud_tool.list_instances import render_data

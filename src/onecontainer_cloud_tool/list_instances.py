@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2021 Intel Corporation
+
 """list available instances."""
 from dateutil import parser
 from pathlib import Path
