@@ -39,7 +39,7 @@ $ cd oneContainer-cloud-tool
 $ pip install .
 ```
 
-oneContainer-cloud-tool has been installed and can be accessed as `onecontainer-cloud-tool`.
+oneContainer-cloud-tool has been installed and can be accessed as `onecontainer_cloud_tool`.
 
 
 ## Usage
