@@ -1,0 +1,119 @@
+{
+    "last_modified": "2021-03-19 15:39:42.559005",
+    "cloud_instances": {
+        "aws": {
+            "c5": [
+                "12xlarge",
+                "24xlarge",
+                "metal"
+            ],
+            "c5d": [
+                "12xlarge",
+                "24xlarge",
+                "metal"
+            ],
+            "m5n": [
+                "large",
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "8xlarge",
+                "12xlarge",
+                "16xlarge",
+                "24xlarge"
+            ],
+            "m5dn": [
+                "large",
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "8xlarge",
+                "12xlarge",
+                "16xlarge",
+                "24xlarge"
+            ],
+            "r5n": [
+                "large",
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "8xlarge",
+                "12xlarge",
+                "16xlarge",
+                "24xlarge"
+            ],
+            "r5dn": [
+                "large",
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "8xlarge",
+                "12xlarge",
+                "16xlarge",
+                "24xlarge"
+            ],
+            "m5zn": [
+                "large",
+                "xlarge",
+                "2xlarge",
+                "3xlarge",
+                "6xlarge",
+                "12xlarge",
+                "metal"
+            ],
+            "d3": [
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "8xlarge"
+            ],
+            "d3en": [
+                "xlarge",
+                "2xlarge",
+                "4xlarge",
+                "6xlarge",
+                "8xlarge",
+                "12xlarge"
+            ]
+        },
+        "azure": {
+            "F2_series": [
+                "Standard_F2s_v2",
+                "Standard_F4s_v2",
+                "Standard_F8s_v2",
+                "Standard_F16s_v2",
+                "Standard_F32s_v2",
+                "Standard_F48s_v2",
+                "Standard_F64s_v2"
+            ],
+            "D4_Series": [
+                "Standard_D2_v4",
+                "Standard_D4_v4",
+                "Standard_D8_v4",
+                "Standard_D16_v4",
+                "Standard_D32_v4",
+                "Standard_D48_v4",
+                "Standard_D64_v4"
+            ],
+            "Dsv4_series": [
+                "Standard_D2s_v4",
+                "Standard_D4s_v4",
+                "Standard_D8s_v4",
+                "Standard_D16s_v4",
+                "Standard_D32s_v4",
+                "Standard_D48s_v4",
+                "Standard_D64s_v4"
+            ],
+            "Dv3-series": [
+                "Standard_D2_v3",
+                "Standard_D4_v3",
+                "Standard_D8_v3",
+                "Standard_D16_v3",
+                "Standard_D32_v3",
+                "Standard_D48_v3",
+                "Standard_D64_v3"
+            ]
+        },
+        "gcp": {}
+    }
+}
