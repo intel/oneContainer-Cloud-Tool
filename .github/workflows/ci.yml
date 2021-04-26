@@ -18,9 +18,13 @@ jobs:
           python-version: 3.7
 
       - name: install poetry
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         uses: dschep/install-poetry-action@v1.2
 
       - name: virtualenv cache
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         uses: actions/cache@v1
         id: cache
         with:
@@ -30,16 +34,24 @@ jobs:
             poetry-${{ hashFiles('**/poetry.lock') }}
 
       - name: poetry config
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: |
           poetry config settings.virtualenvs.in-project false
           poetry config settings.virtualenvs.path ~/.virtualenvs
 
       - name: install deps
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: quality
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: poetry run black . --check
 
       - name: pytest
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: poetry run pytest --cov . -n 2
