@@ -5,7 +5,7 @@ description = "The oneContainer-cloud-tool utility helps to deploy containers to
 authors = ["Duran Padilla, Mauricio <mauricio.duran.padilla@intel.com>", "Rahul Unnikrishnan Nair <rahul.unnikrishnan.nair@intel.com>"]
 
 [tool.poetry.dependencies]
-python = "3.7"
+python = "3.7.*"
 cryptography= "3.3.2"
 boto3 = "1.17.20"
 click = "^7.1.2"

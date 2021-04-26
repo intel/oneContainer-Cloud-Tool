@@ -1,0 +1,41 @@
+name: CI
+
+on: [push]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+
+      - name: using python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: install poetry
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        uses: dschep/install-poetry-action@v1.2
+
+      - name: virtualenv cache
+        env:
+            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: ~/.virtualenvs
+          key: poetry-$
+          restore-keys: |
+            poetry-$
+
+      - name: install deps
+        run: poetry install
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: pytest
+        run: poetry run pytest --cov .
