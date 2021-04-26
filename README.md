@@ -11,7 +11,7 @@ The oneContainer-cloud-tool utility helps to deploy containers to public cloud s
 
 - poetry
 
-- Python >=3.7
+- Python >=3.7<=3.8
 
   
 
