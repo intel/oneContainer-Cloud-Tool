@@ -33,13 +33,6 @@ jobs:
           restore-keys: |
             poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: poetry config
-        env:
-            ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: |
-          poetry config settings.virtualenvs.in-project false
-          poetry config settings.virtualenvs.path ~/.virtualenvs
-
       - name: install deps
         env:
             ACTIONS_ALLOW_UNSECURE_COMMANDS: true
