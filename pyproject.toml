@@ -28,7 +28,9 @@ black = "^20.8b1"
 pytest-cov = "^2.11.1"
 
 [tool.poetry.scripts]
+onecontainer_cloud_tool = "onecontainer_cloud_tool.cli:cli"
 onecontainer-cloud-tool = "onecontainer_cloud_tool.cli:cli"
+oneContainer_Cloud_Tool = "onecontainer_cloud_tool.cli:cli"
 oneContainer-Cloud-Tool = "onecontainer_cloud_tool.cli:cli"
 
 [build-system]
