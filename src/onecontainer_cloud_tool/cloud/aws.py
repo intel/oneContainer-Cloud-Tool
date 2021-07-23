@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2021 Intel Corporation
+
 import configparser
 import os
 from pathlib import Path
@@ -359,7 +362,6 @@ class AWS(Cloud):
 
     def _config_security_group(self) -> str:
         """set egress and ingress rules and configure security group."""
-    
         ec2, _ = AWS._get_clients()
         response = ec2.create_security_group(
             Description="Security Group to allow EC2 instance to register into cluster",
@@ -375,7 +377,6 @@ class AWS(Cloud):
             ],
         )
         security_group_id = response["GroupId"]
-
         ec2.authorize_security_group_egress(
             GroupId=security_group_id,
             IpPermissions=[
@@ -411,35 +412,11 @@ class AWS(Cloud):
                     "IpProtocol": "tcp",
                     "FromPort": 22,
                     "ToPort": 22,
-                    "IpRanges": [
-                        {"CidrIp": "192.198.146.160/27"},
-                        {"CidrIp": "134.191.227.32/27"},
-                        {"CidrIp": "134.134.139.64/27"},
-                        {"CidrIp": "192.55.79.160/27"},
-                        {"CidrIp": "192.55.54.32/27"},
-                        {"CidrIp": "192.198.151.32/27"},
-                        {"CidrIp": "192.198.147.160/27"},
-                        {"CidrIp": "134.191.233.192/27"},
-                        {"CidrIp": "134.191.220.64/27"},
-                        {"CidrIp": "134.191.232.64/27"},
-                        {"CidrIp": "192.55.46.32/27"},
-                        {"CidrIp": "198.175.68.32/27"},
-                        {"CidrIp": "134.191.221.64/27"},
-                        {"CidrIp": "134.134.137.64/27"},
-                        {"CidrIp": "192.102.204.32/27"},
-                        {"CidrIp": "192.55.55.32/27"},
-                    ],
+                    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
                 },
-                # Port 22 rule is excluded for security reasons
-                # {
-                #     "IpProtocol": "tcp",
-                #     "FromPort": 22,
-                #     "ToPort": 22,
-                #     "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-                # },
             ],
 
         )
         logger.debug("configured security group for instance.")
-
         return security_group_id
+

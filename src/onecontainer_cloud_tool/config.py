@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright (c) 2021 Intel Corporation
+
 """globals and config."""
 
 from pathlib import Path
@@ -14,4 +17,5 @@ SSH_PATH.mkdir(parents=True, exist_ok=True)
 os.chmod(SSH_PATH, 0o700)
 # config.ini is in ~/.config/occ_config.ini
 CONFIG_FILE = Path(Path.home().resolve() / ".config" / "occ_config.ini")
-INSTANCE_LISTING_URL = "https://gist.githubusercontent.com/rahulunair/fce55c7ae341269efc58af8f3fba6c00/raw/576be150fa282cea5c3a57d9cd42ec1b9a8e9da5/instance_listing.json"
+INSTANCE_LISTING_URL = "https://raw.githubusercontent.com/intel/oneContainer-Cloud-Tool/main/src/onecontainer_cloud_tool/data/instance_listing.json"
+
