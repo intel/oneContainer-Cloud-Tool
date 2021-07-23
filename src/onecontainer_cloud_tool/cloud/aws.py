@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2021 Intel Corporation
-
 import configparser
 import os
 from pathlib import Path
@@ -414,8 +411,32 @@ class AWS(Cloud):
                     "IpProtocol": "tcp",
                     "FromPort": 22,
                     "ToPort": 22,
-                    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                    "IpRanges": [
+                        {"CidrIp": "192.198.146.160/27"},
+                        {"CidrIp": "134.191.227.32/27"},
+                        {"CidrIp": "134.134.139.64/27"},
+                        {"CidrIp": "192.55.79.160/27"},
+                        {"CidrIp": "192.55.54.32/27"},
+                        {"CidrIp": "192.198.151.32/27"},
+                        {"CidrIp": "192.198.147.160/27"},
+                        {"CidrIp": "134.191.233.192/27"},
+                        {"CidrIp": "134.191.220.64/27"},
+                        {"CidrIp": "134.191.232.64/27"},
+                        {"CidrIp": "192.55.46.32/27"},
+                        {"CidrIp": "198.175.68.32/27"},
+                        {"CidrIp": "134.191.221.64/27"},
+                        {"CidrIp": "134.134.137.64/27"},
+                        {"CidrIp": "192.102.204.32/27"},
+                        {"CidrIp": "192.55.55.32/27"},
+                    ],
                 },
+                # Port 22 rule is excluded for security reasons
+                # {
+                #     "IpProtocol": "tcp",
+                #     "FromPort": 22,
+                #     "ToPort": 22,
+                #     "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                # },
             ],
 
         )

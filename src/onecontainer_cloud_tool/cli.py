@@ -1,16 +1,17 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2021 Intel Corporation
+import json
+import sys
 
 import click
 
-from onecontainer_cloud_tool.logger import logger
 from onecontainer_cloud_tool.list_instances import render_data
+from onecontainer_cloud_tool.logger import logger
 from onecontainer_cloud_tool.services import service
 
 from . import __version__
 
 aws = service("aws")
 azure = service("azure")
+gcp = service("gcp")
 
 
 @click.group()
@@ -18,7 +19,7 @@ azure = service("azure")
 @click.option(
     "--cloud",
     "-c",
-    type=click.Choice(["aws", "azure"]),
+    type=click.Choice(["aws", "azure", "gcp"]),
     help="Use a cloud service, options are: aws, azure",
 )
 @click.pass_context
@@ -37,86 +38,77 @@ def cli(ctx, cloud=None) -> None:
     "--cloud",
     "-c",
     help="list instances for the cloud",
-    type=click.Choice(["aws", "azure", "all"]),
+    type=click.Choice(["aws", "azure", "gcp", "all"]),
 )
 def list_instances(cloud):
     """list cloud instances for intel."""
     if cloud is None:
         render_data(cloud="all")
-    else:
+    # fix this once gcp instance list is updated
+    elif cloud is not "gcp":
         render_data(cloud=cloud)
 
 
 @cli.command("init")
-@click.option(
-    "--access-key",
-    "-ak",
-    help="Access Key Id to access the cloud service",
-    envvar="ACCESS_KEY",
-    hide_input=True,
-)
-@click.option(
-    "--secret-key",
-    "-sk",
-    help="Secret Key to access the cloud service",
-    envvar="SECRET_KEY",
-    hide_input=True,
-)
-@click.option(
-    "--region",
-    "-r",
-    help="The region where the service be located",
-)
 @click.pass_context
 def init(ctx, access_key=None, secret_key=None, region=None):
     logger.debug("Initializing service")
     if ctx.obj.get("cloud", None) == "aws":
-        if access_key is None:
-            access_key = click.prompt("access key", hide_input=True)
-        if secret_key is None:
-            secret_key = click.prompt("secret key", hide_input=True)
-        if region is None:
-            region = "us-east-1"
+        access_key = click.prompt("access key", hide_input=True)
+        secret_key = click.prompt("secret key", hide_input=True)
+        region = click.prompt("region", default="us-east-1")
         aws.initialize(access_key, secret_key, region)
+    elif ctx.obj.get("cloud", None) == "gcp":
+        access_key_file = click.prompt("service account key file", hide_input=False)
+        try:
+            with open(access_key_file, "r") as key_file:
+                project_id = json.load(key_file)["project_id"]
+        except FileNotFoundError:
+            logger.error("given service account key file location incorrect, exiting.")
+            sys.exit(1)
+        region = click.prompt("region", default="us-west1-a")
+        gcp.initialize(access_key_file, project_id, region)
     elif ctx.obj.get("cloud", None) == "azure":
-        if region is None:
-            region = "eastus"
+        region = click.prompt("region", default="eastus")
         azure.initialize(region)
 
 
 @cli.command("start")
 @click.option(
-    "--machine-image",
-    "-mi",
-    default="ami-0128839b21d19300e",
-    help="Machine Image required for service",
-)
-@click.option(
     "--container-image-url",
     "-ci",
-    default="sysstacks/dlrs-tensorflow-ubuntu",
+    default="sysstacks/dlrs-tensorflow2-ubuntu",
     prompt=True,
     help="container image.",
 )
-@click.option(
-    "--instance-type",
-    "-i",
-    help="Hardware instance type",
-)
 @click.pass_context
-def start(ctx, machine_image, container_image_url, instance_type=None):
+def start(ctx, container_image_url):
+    """start deploying containers on cloud."""
+
     if ctx.obj.get("cloud", None) == "aws":
-        if instance_type is None:
-            instance_type = click.prompt("instance type", default="m5n.large")
-            if machine_image is None:
-                machine_image = click.prompt("machine image", default="ami-0128839b21d19300e")
+        instance_type = click.prompt("instance type", default="m5n.large")
+        machine_image = click.prompt("machine image", default="ami-0128839b21d19300e")
         aws.deploy(instance_type, container_image_url, machine_image)
+    elif ctx.obj.get("cloud", None) == "gcp":
+        machine_type = click.prompt("machine type", default="n2-highmem-80")
+        image_project = click.prompt("machine image project", default="cos-cloud")
+        machine_image = click.prompt("machine image", default="cos-89-lts")
+        #cpu_platform = click.prompt("cpu platform", default="Intel Skylake")
+            #cpu_platform,
+        gcp.deploy(
+            machine_type,
+            container_image_url,
+            machine_image,
+            image_project,
+        )
     elif ctx.obj.get("cloud", None) == "azure":
-        if instance_type is None:
-            instance_type = click.prompt("instance type", default="Standard_F2s_v2")
-            if machine_image is None:
-                machine_image = click.prompt("machine image", default="UbuntuServer", type=click.Choice(['UbuntuServer']))
-        azure.deploy(instance_type, container_image_url)
+        instance_type = click.prompt("instance type", default="Standard_F2s_v2")
+        machine_image = click.prompt(
+            "machine image",
+            default="UbuntuServer",
+            type=click.Choice(["UbuntuServer"]),
+        )
+        azure.deploy(instance_type, container_image_url, machine_image)
 
 
 @cli.command("stop")
@@ -131,3 +123,5 @@ def stop(ctx):
         aws.stop()
     elif ctx.obj.get("cloud", None) == "azure":
         azure.stop()
+    elif ctx.obj.get("cloud", None) == "gcp":
+        gcp.stop()

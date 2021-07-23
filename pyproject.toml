@@ -5,7 +5,7 @@ description = "The oneContainer-cloud-tool utility helps to deploy containers to
 authors = ["Duran Padilla, Mauricio <mauricio.duran.padilla@intel.com>", "Rahul Unnikrishnan Nair <rahul.unnikrishnan.nair@intel.com>"]
 
 [tool.poetry.dependencies]
-python = "3.7.*"
+python = "3.7"
 cryptography= "3.3.2"
 boto3 = "1.17.20"
 click = "^7.1.2"
@@ -20,17 +20,19 @@ azure-mgmt-network = "^17.1.0"
 pycryptodomex = "^3.9.9"
 pylint = "^2.7.2"
 pywin32 = {version = "^300", platform = "windows"}
+google-api-python-client = "*"
+google-auth = "*"
+progress = "^1.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 icecream = {version = "^2.1.0", allow-prereleases = true}
 black = "^20.8b1"
 pytest-cov = "^2.11.1"
+ipdb = "^0.13.9"
 
 [tool.poetry.scripts]
-onecontainer_cloud_tool = "onecontainer_cloud_tool.cli:cli"
 onecontainer-cloud-tool = "onecontainer_cloud_tool.cli:cli"
-oneContainer_Cloud_Tool = "onecontainer_cloud_tool.cli:cli"
 oneContainer-Cloud-Tool = "onecontainer_cloud_tool.cli:cli"
 
 [build-system]
