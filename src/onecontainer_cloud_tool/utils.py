@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2021 Intel Corporation
-
 """common utilities."""
 
 import datetime
@@ -36,16 +33,19 @@ def check_config_exists(config):
         raise FileNotFoundError
 
 def remove_config_if_empty(ini_conf, config):
-    if(len(ini_conf.sections())==0):
-        os.remove(config.CONFIG_FILE)
-        return True
+    try:
+        if(len(ini_conf.sections())==0):
+            os.remove(config.CONFIG_FILE)
+            return True
+    except FileNotFoundError:
+        logger.warning("config file not removed, file not found")
     return False
 
 class SSHkeys:
     """generate ephemerial private and public keys."""
 
     def __init__(self):
-        self.private_key_path = Path(Path.home().resolve() / ".ssh"/ "private_key.pem")
+        self.private_key_path = Path(Path.home().resolve() / ".ssh"/ "occt_private_key.pem")
         self.private_key = None
         self.public_key = None
         if isfile(self.private_key_path):
@@ -80,7 +80,7 @@ class SSHkeys:
 
     def delete_ssh_keys(self):
         """delete ssh keys used to access resource."""
-        logger.debug("remove ssh keys.")
+        logger.debug(f"remove ssh keys. in path: {self.private_key_path}")
         os.remove(self.private_key_path)
 
     def set_public_key(self):

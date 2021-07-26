@@ -18,3 +18,4 @@ os.chmod(SSH_PATH, 0o700)
 # config.ini is in ~/.config/occ_config.ini
 CONFIG_FILE = Path(Path.home().resolve() / ".config" / "occ_config.ini")
 INSTANCE_LISTING_URL = "https://raw.githubusercontent.com/intel/oneContainer-Cloud-Tool/main/src/onecontainer_cloud_tool/data/instance_listing.json"
+

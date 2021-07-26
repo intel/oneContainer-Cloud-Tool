@@ -1,6 +1,3 @@
-# SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2021 Intel Corporation
-
 import base64
 import configparser
 import os

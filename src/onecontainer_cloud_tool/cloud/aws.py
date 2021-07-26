@@ -362,7 +362,6 @@ class AWS(Cloud):
 
     def _config_security_group(self) -> str:
         """set egress and ingress rules and configure security group."""
-    
         ec2, _ = AWS._get_clients()
         response = ec2.create_security_group(
             Description="Security Group to allow EC2 instance to register into cluster",
@@ -378,7 +377,6 @@ class AWS(Cloud):
             ],
         )
         security_group_id = response["GroupId"]
-
         ec2.authorize_security_group_egress(
             GroupId=security_group_id,
             IpPermissions=[
@@ -420,5 +418,5 @@ class AWS(Cloud):
 
         )
         logger.debug("configured security group for instance.")
-
         return security_group_id
+
