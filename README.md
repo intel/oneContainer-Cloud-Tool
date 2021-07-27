@@ -5,7 +5,7 @@
 
   
 
-The oneContainer-cloud-tool utility helps to deploy containers to public cloud services. The `tool` enables a user to map a service to specific hardware and machine image of choice.
+The oneContainer-cloud-tool utility helps to deploy containers to public cloud services including aws, azure and gcp. The `tool` enables a user to map a service to specific hardware, machine image and container of choice.
 
 ## Requirements
 
@@ -64,14 +64,14 @@ cloud.
 
 This tool supports deploying container instances to cloud services,
 
-mapping to specific HW. Supported cloud services: aws, azure
+mapping to specific HW. Supported cloud services: aws, azure, gcp
 
 
 Options:
 
 --version Show the version and exit.
 
--c, --cloud [aws|azure] Use a cloud service, options are: aws, azure
+-c, --cloud [aws|azure|gcp] Use a cloud service, options are: aws, azure, gcp
 
 --help Show this message and exit.
 
