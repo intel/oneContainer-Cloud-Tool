@@ -101,7 +101,7 @@ Usage: onecontainer-cloud-tool init [OPTIONS]
 
 Options:
 
--c, --cloud [aws, azure] Use a cloud service, options are: aws
+-c, --cloud [aws, azure, gcp] Use a cloud service
 
 --access-key TEXT Access Key Id to access the cloud service
 
@@ -193,7 +193,7 @@ Usage: onecontainer-cloud-tool stop [OPTIONS]
 
 Options:
 
--c, --cloud [aws, azure] Use a cloud service, options are: aws, azure
+-c, --cloud [aws, azure, gcp] Use a cloud service, options are: aws, azure, gcp
 
   
 
