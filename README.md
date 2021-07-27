@@ -143,7 +143,7 @@ Usage: onecontainer-cloud-tool start [OPTIONS]
 
 Options:
 
--c, --cloud [aws, azure] Use a cloud service, options are: aws, azure
+-c, --cloud [aws, azure, gcp] Use a cloud service, options are: aws, azure
 
 --mi TEXT Machine Image required for service
 
